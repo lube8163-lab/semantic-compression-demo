@@ -79,7 +79,15 @@
   <script>
     const form = document.getElementById('postForm');
     const timeline = document.getElementById('timeline');
+    const MAX_POSTS = 10; // 保存する最大投稿数
 
+    // ページ読み込み時に保存済み投稿を表示
+    window.onload = () => {
+      const savedPosts = JSON.parse(localStorage.getItem("posts")) || [];
+      savedPosts.forEach(post => addPostToTimeline(post));
+    };
+
+    // 投稿フォーム処理
     form.addEventListener('submit', (e) => {
       e.preventDefault();
 
@@ -91,27 +99,81 @@
         return;
       }
 
+      // 画像を圧縮して保存
+      resizeImage(file, 800, 800, (compressedDataUrl) => {
+        savePost(caption, compressedDataUrl);
+        form.reset();
+      });
+    });
+
+    // 投稿を保存
+    function savePost(caption, imageData) {
+      let posts = JSON.parse(localStorage.getItem("posts")) || [];
+      const now = new Date();
+      const pseudoUser = "user_" + now.getHours() + now.getMinutes();
+      const post = {
+        user: pseudoUser,
+        time: now.toLocaleString(),
+        caption: caption,
+        image: imageData
+      };
+
+      posts.unshift(post); // 新しい投稿を先頭に追加
+
+      // 上限を超えたら古い投稿を削除
+      if (posts.length > MAX_POSTS) {
+        posts = posts.slice(0, MAX_POSTS);
+      }
+
+      localStorage.setItem("posts", JSON.stringify(posts));
+      addPostToTimeline(post);
+    }
+
+    // タイムラインに表示
+    function addPostToTimeline(post) {
+      const postDiv = document.createElement('div');
+      postDiv.className = 'post';
+      postDiv.innerHTML = `
+        <div class="post-header">@${post.user} ・ ${post.time}</div>
+        <p>${post.caption}</p>
+        <img src="${post.image}" alt="投稿画像">
+      `;
+      timeline.prepend(postDiv);
+    }
+
+    // 画像リサイズ・圧縮
+    function resizeImage(file, maxWidth, maxHeight, callback) {
       const reader = new FileReader();
       reader.onload = function(event) {
-        const post = document.createElement('div');
-        post.className = 'post';
+        const img = new Image();
+        img.onload = function() {
+          let width = img.width;
+          let height = img.height;
 
-        // 時刻を「アカウント名っぽく」表示
-        const now = new Date();
-        const pseudoUser = "user_" + now.getHours() + now.getMinutes();
-        const timeStr = now.toLocaleString();
+          // 縦横比を保ちつつリサイズ
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
 
-        post.innerHTML = `
-          <div class="post-header">@${pseudoUser} ・ ${timeStr}</div>
-          <p>${caption}</p>
-          <img src="${event.target.result}" alt="投稿画像">
-        `;
-        timeline.prepend(post);
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // JPEG形式で圧縮（品質0.7）
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          callback(dataUrl);
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
-
-      form.reset();
-    });
+    }
   </script>
 </body>
 </html>
