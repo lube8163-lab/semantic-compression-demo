@@ -4,24 +4,77 @@
   <meta charset="UTF-8">
   <title>Semantic Compression Demo</title>
   <style>
-    body { font-family: sans-serif; margin: 20px; }
-    #timeline { margin-top: 20px; }
-    .post { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
-    img { max-width: 100%; height: auto; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 20px;
+      font-weight: bold;
+      font-size: 20px;
+      position: sticky;
+      top: 0;
+    }
+    #container {
+      max-width: 600px;
+      margin: 20px auto;
+    }
+    #postForm {
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    #postForm textarea {
+      width: 100%;
+      resize: none;
+    }
+    #postForm button {
+      background: #1d9bf0;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 20px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    .post {
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .post-header {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .post img {
+      max-width: 100%;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
-  <h1>AI圧縮SNSデモ</h1>
+  <header>AI圧縮SNSデモ</header>
+  <div id="container">
 
-  <!-- 投稿フォーム -->
-  <form id="postForm">
-    <input type="file" id="imageInput" accept="image/*"><br><br>
-    <textarea id="captionInput" placeholder="キャプションを書いてね" rows="2" cols="30"></textarea><br><br>
-    <button type="submit">投稿する</button>
-  </form>
+    <!-- 投稿フォーム -->
+    <form id="postForm">
+      <input type="file" id="imageInput" accept="image/*"><br><br>
+      <textarea id="captionInput" placeholder="いまどうしてる？" rows="2"></textarea><br>
+      <button type="submit">投稿</button>
+    </form>
 
-  <!-- タイムライン -->
-  <div id="timeline"></div>
+    <!-- タイムライン -->
+    <div id="timeline"></div>
+  </div>
 
   <script>
     const form = document.getElementById('postForm');
@@ -42,15 +95,21 @@
       reader.onload = function(event) {
         const post = document.createElement('div');
         post.className = 'post';
+
+        // 時刻を「アカウント名っぽく」表示
+        const now = new Date();
+        const pseudoUser = "user_" + now.getHours() + now.getMinutes();
+        const timeStr = now.toLocaleString();
+
         post.innerHTML = `
-          <p><b>キャプション:</b> ${caption}</p>
+          <div class="post-header">@${pseudoUser} ・ ${timeStr}</div>
+          <p>${caption}</p>
           <img src="${event.target.result}" alt="投稿画像">
         `;
-        timeline.prepend(post); // 上に追加
+        timeline.prepend(post);
       };
       reader.readAsDataURL(file);
 
-      // 入力欄をリセット
       form.reset();
     });
   </script>
