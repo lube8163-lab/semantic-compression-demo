@@ -81,10 +81,12 @@
     const timeline = document.getElementById('timeline');
     const MAX_POSTS = 10; // 保存する最大投稿数
 
-    // ページ読み込み時に保存済み投稿を表示
+    // ページ読み込み時に保存済み投稿を新しい順で表示
     window.onload = () => {
       const savedPosts = JSON.parse(localStorage.getItem("posts")) || [];
-      savedPosts.forEach(post => addPostToTimeline(post));
+      savedPosts.forEach(post => addPostToTimeline(post)); // ここを逆順でループ
+      timeline.innerHTML = ""; // 一旦リセット
+      savedPosts.reverse().forEach(post => addPostToTimeline(post));
     };
 
     // 投稿フォーム処理
