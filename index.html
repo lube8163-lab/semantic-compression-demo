@@ -81,11 +81,22 @@
     const timeline = document.getElementById('timeline');
     const MAX_POSTS = 10; // 保存する最大投稿数
 
+    // ダミーAIキャプション生成
+    function fakeAICaption() {
+      const samples = [
+        "青空の下でリラックス中",
+        "新しい冒険の始まり",
+        "美味しそうなランチ！",
+        "今日の気分は最高！",
+        "AIが自動生成したキャプションです"
+      ];
+      return samples[Math.floor(Math.random() * samples.length)];
+    }
+
     // ページ読み込み時に保存済み投稿を新しい順で表示
     window.onload = () => {
       const savedPosts = JSON.parse(localStorage.getItem("posts")) || [];
-      savedPosts.forEach(post => addPostToTimeline(post)); // ここを逆順でループ
-      timeline.innerHTML = ""; // 一旦リセット
+      timeline.innerHTML = "";
       savedPosts.reverse().forEach(post => addPostToTimeline(post));
     };
 
@@ -103,7 +114,13 @@
 
       // 画像を圧縮して保存
       resizeImage(file, 800, 800, (compressedDataUrl) => {
-        savePost(caption, compressedDataUrl);
+        // キャプションが未入力ならAIっぽい一言を補完
+        let finalCaption = caption.trim();
+        if (!finalCaption) {
+          finalCaption = fakeAICaption();
+        }
+
+        savePost(finalCaption, compressedDataUrl);
         form.reset();
       });
     });
@@ -152,7 +169,6 @@
           let width = img.width;
           let height = img.height;
 
-          // 縦横比を保ちつつリサイズ
           if (width > maxWidth) {
             height *= maxWidth / width;
             width = maxWidth;
@@ -168,7 +184,6 @@
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, width, height);
 
-          // JPEG形式で圧縮（品質0.7）
           const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
           callback(dataUrl);
         };
