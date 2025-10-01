@@ -39,7 +39,7 @@ This project explores an idea where instead of sending raw data,
 ---
 
 ## 🌐 Demo URL
-[Demo page here](https://username.github.io/repository/)
+[Demo page here](https://lube8163-lab.github.io/semantic-compression-demo/)
 
 ---
 
@@ -92,7 +92,7 @@ MIT License (planned)
 ---
 
 ## 🌐 公開URL
-[デモページはこちら](https://username.github.io/repository/)
+[デモページはこちら](https://lube8163-lab.github.io/semantic-compression-demo/)
 
 ---
 
