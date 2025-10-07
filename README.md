@@ -1,105 +1,100 @@
-# Semantic Compression Demo
+# 🧭 Semantic Compression Project (v1.0)
 
-This repository is a **demo project of semantic compression using AI**.  
-The goal is to experiment with an alternative communication method where data is **compressed into semantic prompts** and **regenerated on the receiver’s side**, aiming to reduce global data transmission and energy consumption.
+An experimental implementation of **semantic communication**,  
+where data is transmitted as *meaning* instead of raw binary.  
+By letting AI interpret, compress, and regenerate content,  
+this project aims to reduce data transfer volume and global energy usage.  
 
----
-
-## 🎯 Background & Goal
-In recent years, data traffic in SNS and online services has been rapidly increasing.  
-At the same time, issues related to energy consumption and infrastructure load are becoming more serious.  
-
-This project explores an idea where instead of sending raw data,  
-- the data is **compressed into a semantic form (prompt)** by AI,  
-- transmitted as lightweight text,  
-- and **regenerated on the receiver’s side**.  
+This repository provides a proof-of-concept via an **AI-assisted SNS demo**  
+where images are “semantically compressed” into AI-generated captions.
 
 ---
 
-## 🛠️ Current Features
-- Image posting with automatic resizing & JPEG compression  
-- LocalStorage saving (remains after reload)  
-- Max 10 posts are kept (older ones are automatically deleted)  
-- SNS-like UI timeline  
+## 🚀 Current Status
+
+### ✅ Version: v1.0 (as of October 2025)
+
+| Component | Status | Notes |
+|------------|---------|-------|
+| GitHub Pages | ✅ Working | Image posting & viewing UI |
+| Cloudflare Worker | ✅ Working | Acts as API relay to OpenAI |
+| OpenAI API | ✅ gpt-4o-mini (vision) | Successfully generates captions |
+| Security | ✅ Completed | `.dev.vars` + Cloudflare Secret |
+| Billing | ✅ Prepaid ($5 test) | Safe, usage-limited setup |
 
 ---
 
-## 🔮 Roadmap
-- AI-based automatic caption generation  
-- Semantic prompt generation & reconstruction demo  
-- Sharing posts among users (towards a real SNS)  
+## ⚙️ System Architecture
+
+📦 semantic-compression/
+│
+├── index.html ← SNS demo (image + caption UI)
+│ ├── Form-based upload
+│ ├── LocalStorage persistence & cleanup
+│ └── Sends data to Worker via fetch()
+│
+└── semantic-worker/ ← Cloudflare Worker
+├── src/index.js ← OpenAI relay (vision-enabled)
+├── .dev.vars ← Local API key management
+└── wrangler.toml ← Worker configuration
+
+📡 **Flow:**
+User post → (fetch) → Cloudflare Worker
+→ OpenAI API (gpt-4o-mini)
+→ AI caption returned → displayed on SNS
 
 ---
 
-## 👩‍💻 Development Notes
-- This is a **beginner-level learning & trial project**  
-- Most of the coding is supported by **AI (ChatGPT, etc.)**  
-- If you know any similar research or projects, please let me know 🙏  
+## 🧠 Achievements & Findings
+
+### 🎯 Achievements
+- Successful integration of **OpenAI vision API** via Cloudflare Workers  
+- Full SNS-to-AI pipeline for automatic caption generation  
+- Secure handling of API keys using `.dev.vars` + Cloudflare Secret  
+- Validation of semantic compression as a method for communication efficiency  
+
+### ⚠️ Known Technical Limitations
+- Cloudflare Workers limit JSON body size to **1MB**  
+  → Base64-encoded images cannot be transmitted directly  
+- Current solution: AI fetches **public image URLs** instead of inline Base64  
 
 ---
 
-## 🌐 Demo URL
-[Demo page here](https://lube8163-lab.github.io/semantic-compression-demo/)
+## 🔜 Next Steps (v1.1 and beyond)
+
+| Phase | Description |
+|--------|-------------|
+| 🔄 Image URL Automation | Use Cloudflare Images / S3 for temporary image hosting |
+| 🧩 SNS Integration | Auto-attach AI captions to posts |
+| 🧠 Compression Study | Evaluate data loss vs. semantic accuracy |
+| 🌍 Real-world Use | Explore low-bandwidth or disaster communication scenarios |
 
 ---
 
-## 📜 License
-MIT License (planned)
+## 🪪 Developer Notes
+- Coding assistance: ChatGPT (GPT-5)  
+- Model: `gpt-4o-mini` (vision-enabled)  
+- API keys managed securely through `.dev.vars` & Cloudflare Secret  
+- Billing: Prepaid ($5) with automatic usage cap  
 
 ---
 
-# セマンティック圧縮デモ
+## 🧩 Project Significance
 
-このリポジトリは **AIを利用したセマンティック圧縮のデモプロジェクト**です。  
-「データそのもの」ではなく **意味ベースのプロンプト**を送信し、受信側で再生成することで、  
-**世界的な通信量・エネルギー消費を減らす**ことを目的としています。
-
----
-
-## 🎯 背景・目的
-近年、SNSやオンラインサービスのデータ通信量は増加し続けています。  
-その一方で、通信インフラやエネルギー消費の課題も深刻化しています。  
-
-このプロジェクトでは、  
-- 通常の「データそのもの」を送る代わりに  
-- **AIが理解できる形に圧縮（セマンティック圧縮）して送信**  
-- 受信側で再生成する  
-
-というアイデアを試験的に実装していきます。  
+Semantic communication proposes a shift from transmitting *data*  
+to transmitting the *meaning* behind it.  
+This concept, when scaled, could reduce global data transfer energy consumption  
+and support efficient communication in low-bandwidth environments  
+(such as satellites, IoT, or disaster recovery networks).
 
 ---
 
-## 🛠️ 現状の機能
-- 画像投稿（リサイズ＆JPEG圧縮あり）  
-- LocalStorageに保存（リロードしても消えない）  
-- 最大10件まで保存（古い投稿は自動削除）  
-- SNS風タイムライン表示  
+### 📅 Update History
+- **2025-10-07** — v1.0 Completed: successful AI caption generation  
+- **2025-10-08 → v1.1** — expanding to URL-based and regeneration workflows  
 
 ---
 
-## 🔮 今後の予定
-- AIによる自動キャプション生成  
-- 圧縮プロンプト生成と再構築デモ  
-- 投稿の共有機能（SNS化）  
-
----
-
-## 👩‍💻 開発メモ
-- **初心者による学習・試行プロジェクト**です  
-- コーディングは **AI支援（ChatGPT等）** を活用しています  
-- 類似研究や既存サービスをご存知の方はぜひ教えてください 🙏  
-
----
-
-## 🌐 公開URL
-[デモページはこちら](https://lube8163-lab.github.io/semantic-compression-demo/)
-
----
-
-## 📝 Personal Notes (自分用メモ)
-- 現状はデモ版として動作確認中  
-- 保存はLocalStorageベース、サーバーは未導入  
-- 将来的にはプロンプトのみを保存・共有 → 再生成で通信負荷を削減する流れを目指す  
-- 参考にした記事や気になるニュース:  
-  - OpenAI “Sora by OpenAI” (SNS × AI生成動画)  
-- 次の実装ステップ: AIキャプション生成（まずはダミーで）
+📬 **Notes from the Author**  
+This repository is open for experimental and educational purposes.  
+Feedback, research collaboration, or related project references are warmly welcomed.
