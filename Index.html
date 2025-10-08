@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Semantic Compression Demo v1.1</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 20px;
+      font-weight: bold;
+      font-size: 20px;
+      position: sticky;
+      top: 0;
+    }
+    #container {
+      max-width: 600px;
+      margin: 20px auto;
+    }
+    #postForm {
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    #postForm textarea {
+      width: 100%;
+      resize: none;
+    }
+    #postForm button {
+      background: #1d9bf0;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 20px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    .post {
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .post-header {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .post img {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>AI圧縮SNSデモ v1.1</header>
+  <div id="container">
+
+    <!-- 投稿フォーム -->
+    <form id="postForm">
+      <input type="file" id="imageInput" accept="image/*"><br><br>
+      <textarea id="captionInput" placeholder="いまどうしてる？" rows="2"></textarea><br>
+      <button type="submit">投稿</button>
+    </form>
+
+    <!-- タイムライン -->
+    <div id="timeline"></div>
+  </div>
+
+<script>
+const form = document.getElementById('postForm');
+const timeline = document.getElementById('timeline');
+const MAX_POSTS = 10;
+const WORKER_URL = "https://semantic-worker.semantic-compression.workers.dev"; // ← 君のWorkerのURL
+
+// 🧠 AIキャプション生成：画像をURL化して送信
+async function generateAICaptionFromImage(imageBlob) {
+  try {
+    const imageUrl = URL.createObjectURL(imageBlob); // 一時URL（ローカルBlob）
+    const payload = {
+      prompt: "この画像の内容を短く説明して",
+      image_url: { url: imageUrl }
+    };
+
+    const response = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    const aiCaption = data.choices?.[0]?.message?.content || "AI生成失敗…";
+    return aiCaption.trim();
+  } catch (error) {
+    console.error("AI生成エラー:", error);
+    return "AI生成エラー";
+  }
+}
+
+// 🔁 ページ読み込み時：保存済み投稿を表示
+window.onload = () => {
+  const savedPosts = JSON.parse(localStorage.getItem("posts")) || [];
+  timeline.innerHTML = "";
+  savedPosts.reverse().forEach(post => addPostToTimeline(post));
+};
+
+// ✉️ 投稿フォーム送信
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const captionInput = document.getElementById('captionInput').value;
+  const file = document.getElementById('imageInput').files[0];
+  if (!file) {
+    alert("画像を選んでね！");
+    return;
+  }
+
+  // 🔧 画像リサイズ
+  resizeImage(file, 800, 800, async (compressedDataUrl, blob) => {
+    let finalCaption = captionInput.trim();
+
+    // 💬 キャプションが空ならAIに依頼
+    if (!finalCaption) {
+      finalCaption = await generateAICaptionFromImage(blob);
+    }
+
+    savePost(finalCaption, compressedDataUrl);
+    form.reset();
+  });
+});
+
+// 💾 投稿を保存
+function savePost(caption, imageData) {
+  let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  const now = new Date();
+  const pseudoUser = "user_" + now.getHours() + now.getMinutes();
+
+  const post = {
+    user: pseudoUser,
+    time: now.toLocaleString(),
+    caption: caption,
+    image: imageData
+  };
+
+  posts.unshift(post);
+  if (posts.length > MAX_POSTS) posts = posts.slice(0, MAX_POSTS);
+
+  localStorage.setItem("posts", JSON.stringify(posts));
+  addPostToTimeline(post);
+}
+
+// 🧱 タイムラインに表示
+function addPostToTimeline(post) {
+  const postDiv = document.createElement('div');
+  postDiv.className = 'post';
+  postDiv.innerHTML = `
+    <div class="post-header">@${post.user} ・ ${post.time}</div>
+    <p>${post.caption}</p>
+    <img src="${post.image}" alt="投稿画像">
+  `;
+  timeline.prepend(postDiv);
+}
+
+// 🖼️ 画像をCanvasで圧縮＋Blob化
+function resizeImage(file, maxWidth, maxHeight, callback) {
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const img = new Image();
+    img.onload = function() {
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxWidth) {
+        height *= maxWidth / width;
+        width = maxWidth;
+      }
+      if (height > maxHeight) {
+        width *= maxHeight / height;
+        height = maxHeight;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          callback(dataUrl, blob);
+        },
+        "image/jpeg",
+        0.7
+      );
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+</script>
+
+</body>
+</html>
