@@ -38,9 +38,9 @@ where images are “semantically compressed” into AI-generated captions.
 ├── .dev.vars ← Local API key management
 └── wrangler.toml ← Worker configuration
 
-📡 **Flow:**
-User post → (fetch) → Cloudflare Worker
-→ OpenAI API (gpt-4o-mini)
+📡 **Flow:**  
+User post → (fetch) → Cloudflare Worker  
+→ OpenAI API (gpt-4o-mini)  
 → AI caption returned → displayed on SNS
 
 ---
@@ -54,7 +54,7 @@ User post → (fetch) → Cloudflare Worker
 - Validation of semantic compression as a method for communication efficiency  
 
 ### ⚠️ Known Technical Limitations
-- Cloudflare Workers limit JSON body size to **1MB**  
+- Cloudflare Workers limit JSON body size to **1 MB**  
   → Base64-encoded images cannot be transmitted directly  
 - Current solution: AI fetches **public image URLs** instead of inline Base64  
 
@@ -71,11 +71,25 @@ User post → (fetch) → Cloudflare Worker
 
 ---
 
-## 🪪 Developer Notes
-- Coding assistance: ChatGPT (GPT-5)  
-- Model: `gpt-4o-mini` (vision-enabled)  
-- API keys managed securely through `.dev.vars` & Cloudflare Secret  
-- Billing: Prepaid ($5) with automatic usage cap  
+## 🧪 Development Context
+
+This project is an **independent learning and experimental work**  
+by a beginner developer exploring AI-assisted programming.  
+All code was written and refined in collaboration with **ChatGPT (GPT-5)**,  
+which provided explanations, debugging advice, and generation support.  
+
+The goal is not commercial use, but to **learn, test, and document**  
+the feasibility of AI-driven semantic compression techniques.
+
+---
+
+## 🪪 License
+
+This repository is released under the **[Apache License 2.0](./LICENSE)**.  
+A supplementary **[Japanese summary version](./LICENSE_JA.md)** is also available for reference.  
+
+You are free to use, modify, and distribute this software  
+under the terms of the license, which includes a patent grant to help prevent misuse.
 
 ---
 
@@ -90,11 +104,25 @@ and support efficient communication in low-bandwidth environments
 ---
 
 ### 📅 Update History
-- **2025-10-07** — v1.0 Completed: successful AI caption generation  
-- **2025-10-08 → v1.1** — expanding to URL-based and regeneration workflows  
+
+- **2025-10-07 — v1.0 Completed:** successful AI caption generation  
+- **2025-10-08 → v1.1:** expanding to URL-based and regeneration workflows  
 
 ---
 
-📬 **Notes from the Author**  
+📬 **Notes from the Author**
+
 This repository is open for experimental and educational purposes.  
-Feedback, research collaboration, or related project references are warmly welcomed.
+Feedback, research collaboration, or related project references are warmly welcomed.  
+
+---
+
+## 🧭 Summary
+
+| Category | Details |
+|-----------|----------|
+| Development Style | Beginner-led, AI-assisted coding (ChatGPT GPT-5) |
+| Language | JavaScript (Vanilla) + Cloudflare Workers |
+| Model Used | gpt-4o-mini (Vision) |
+| Hosting | GitHub Pages + Cloudflare Workers |
+| License | Apache License 2.0 |
