@@ -1,203 +1,251 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Semantic Compression Demo</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f0f2f5;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #fff;
-      border-bottom: 1px solid #ddd;
-      padding: 10px 20px;
-      font-weight: bold;
-      font-size: 20px;
-      position: sticky;
-      top: 0;
-    }
-    #container {
-      max-width: 600px;
-      margin: 20px auto;
-    }
-    #postForm {
-      background: #fff;
-      padding: 15px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    #postForm textarea {
-      width: 100%;
-      resize: none;
-    }
-    #postForm button {
-      background: #1d9bf0;
-      color: white;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 20px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-    .post {
-      background: #fff;
-      padding: 15px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      margin-bottom: 15px;
-    }
-    .post-header {
-      font-size: 14px;
-      color: #555;
-      margin-bottom: 10px;
-    }
-    .post img {
-      max-width: 100%;
-      border-radius: 8px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Semantic Compression Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 20px;
+            position: sticky;
+            top: 0;
+        }
+
+        #container {
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        #postForm {
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        #postForm textarea {
+            width: 100%;
+            resize: none;
+        }
+
+        #postForm button {
+            background: #1d9bf0;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .post {
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .post-header {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .post img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+    </style>
 </head>
+
 <body>
-  <header>AI圧縮SNSデモ</header>
-  <div id="container">
+    <header>AI圧縮SNSデモ</header>
+    <div id="container">
 
-    <!-- 投稿フォーム -->
-    <form id="postForm">
-      <input type="file" id="imageInput" accept="image/*"><br><br>
-      <textarea id="captionInput" placeholder="いまどうしてる？" rows="2"></textarea><br>
-      <button type="submit">投稿</button>
-    </form>
+        <!-- 投稿フォーム -->
+        <form id="postForm">
+            <input type="file" id="imageInput" accept="image/*"><br><br>
+            <textarea id="captionInput" placeholder="いまどうしてる？" rows="2"></textarea><br>
+            <button type="submit">投稿</button>
+        </form>
 
-    <!-- タイムライン -->
-    <div id="timeline"></div>
-  </div>
+        <!-- タイムライン -->
+        <div id="timeline"></div>
+    </div>
 
-　　<script>
-  　　const form = document.getElementById('postForm');
-  　　const timeline = document.getElementById('timeline');
-  　　const MAX_POSTS = 10; // 保存する最大投稿数
+    <script>
+        const form = document.getElementById('postForm');
+        const timeline = document.getElementById('timeline');
+        const MAX_POSTS = 10;
+        const WORKER_URL = "https://semantic-worker.semantic-compression.workers.dev";
 
-  　　// ✅ AIキャプション生成（Cloudflare Workerを利用）
-  　　async function generateAICaption(promptText) {
-   　　 try {
-     　　 const response = await fetch("https://semantic-worker.semantic-compression.workers.dev", {
-       　　 method: "POST",
-        　　headers: { "Content-Type": "application/json" },
-       　　 body: JSON.stringify({ prompt: promptText })
-      　　});
+        // 🪄 画像をCloudflare ImagesへアップロードしてURLを取得
+        async function uploadImageAndGetUrl(imageBlob) {
+            const formData = new FormData();
+            formData.append("file", imageBlob, "upload.jpg");
 
-     　　 const data = await response.json();
-     　　 const aiCaption = data.choices?.[0]?.message?.content || "AI生成失敗…";
-      　　return aiCaption.trim();
-    　　} catch (error) {
-     　　 console.error("AI生成エラー:", error);
-      　　return "AI生成エラー";
-   　　 }
- 　　 }
+            const response = await fetch(WORKER_URL + "/upload", {
+                method: "POST",
+                body: formData,
+            });
 
-  　　// ページ読み込み時に保存済み投稿を新しい順で表示
-  　　window.onload = () => {
-    　　const savedPosts = JSON.parse(localStorage.getItem("posts")) || [];
-    　　timeline.innerHTML = "";
-    　　savedPosts.reverse().forEach(post => addPostToTimeline(post));
-  　　};
+            const data = await response.json();
+            if (data.imageUrl) {
+                console.log("✅ Uploaded:", data.imageUrl);
+                return data.imageUrl;
+            } else {
+                console.error("❌ Upload failed:", data);
+                throw new Error("Upload failed");
+            }
+        }
 
-  　　// 投稿フォーム処理
-  　　form.addEventListener('submit', async (e) => {
-    　　e.preventDefault();
+        // 🧠 Cloudflare ImagesのURLを使ってAIキャプションを生成
+        async function generateAICaptionFromUrl(imageUrl) {
+            try {
+                const payload = {
+                    prompt: "この画像の内容を短く説明して",
+                    image_url: { url: imageUrl },
+                };
 
-    　　const caption = document.getElementById('captionInput').value;
-    　　const file = document.getElementById('imageInput').files[0];
+                const response = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
 
-    　　if (!file) {
-      　　alert("画像を選んでね！");
-      　　return;
-    　　}
+                const data = await response.json();
+                const aiCaption = data.choices?.[0]?.message?.content || "AI生成失敗…";
+                return aiCaption.trim();
+            } catch (error) {
+                console.error("AI生成エラー:", error);
+                return "AI生成エラー";
+            }
+        }
 
-    　　// 画像を圧縮して保存
-    　　resizeImage(file, 800, 800, async (compressedDataUrl) => {
-      　　let finalCaption = caption.trim();
+        // 🔁 ページ読み込み時：保存済み投稿を表示
+        window.onload = () => {
+            const savedPosts = JSON.parse(localStorage.getItem("posts")) || [];
+            timeline.innerHTML = "";
+            savedPosts.reverse().forEach(post => addPostToTimeline(post));
+        };
 
-      　　// ✅ キャプションが空ならAIに生成依頼
-      　　if (!finalCaption) {
-        　　finalCaption = await generateAICaption("この画像の内容を短く説明して");
-      　　}
+        // ✉️ 投稿フォーム送信
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-      　　savePost(finalCaption, compressedDataUrl);
-      　　form.reset();
-    　　});
-  　　});
+            const captionInput = document.getElementById('captionInput').value;
+            const file = document.getElementById('imageInput').files[0];
+            if (!file) {
+                alert("画像を選んでね！");
+                return;
+            }
 
-  　　// 投稿を保存
-  　　function savePost(caption, imageData) {
-    　　let posts = JSON.parse(localStorage.getItem("posts")) || [];
-    　　const now = new Date();
-    　　const pseudoUser = "user_" + now.getHours() + now.getMinutes();
-    　　const post = {
-      　　user: pseudoUser,
-      　　time: now.toLocaleString(),
-      　　caption: caption,
-      　　image: imageData
-    　　};
+            // まず画像をリサイズしてBlob化
+            resizeImage(file, 800, 800, async (compressedDataUrl, blob) => {
+                try {
+                    // Cloudflare ImagesにアップロードしてURL取得
+                    const imageUrl = await uploadImageAndGetUrl(blob);
 
-    　　posts.unshift(post);
+                    // キャプションが空欄ならAI生成
+                    let finalCaption = captionInput.trim();
+                    if (!finalCaption) {
+                        finalCaption = await generateAICaptionFromUrl(imageUrl);
+                    }
 
-    　　if (posts.length > MAX_POSTS) {
-      　　posts = posts.slice(0, MAX_POSTS);
-    　　}
+                    savePost(finalCaption, imageUrl); // ← 保存時もCloudflare ImagesのURLを使用
+                    form.reset();
+                } catch (err) {
+                    console.error("投稿エラー:", err);
+                    alert("投稿中にエラーが発生しました。");
+                }
+            });
+        });
 
-    　　localStorage.setItem("posts", JSON.stringify(posts));
-    　　addPostToTimeline(post);
-  　　}
+        // 💾 投稿を保存
+        function savePost(caption, imageUrl) {
+            let posts = JSON.parse(localStorage.getItem("posts")) || [];
+            const now = new Date();
+            const pseudoUser = "user_" + now.getHours() + now.getMinutes();
 
-  　　// タイムラインに表示
-  　　function addPostToTimeline(post) {
-    　　const postDiv = document.createElement('div');
-    　　postDiv.className = 'post';
-    　　postDiv.innerHTML = `
-      　　<div class="post-header">@${post.user} ・ ${post.time}</div>
-      　　<p>${post.caption}</p>
-      　　<img src="${post.image}" alt="投稿画像">
-    　　`;
-    　　timeline.prepend(postDiv);
-  　　}
+            const post = {
+                user: pseudoUser,
+                time: now.toLocaleString(),
+                caption,
+                image: imageUrl, // ← Base64ではなくURL
+            };
 
-  　　// 画像リサイズ・圧縮
-  　　function resizeImage(file, maxWidth, maxHeight, callback) {
-    　　const reader = new FileReader();
-    　　reader.onload = function(event) {
-      　　const img = new Image();
-      　　img.onload = function() {
-        　　let width = img.width;
-        　　let height = img.height;
+            posts.unshift(post);
+            if (posts.length > MAX_POSTS) posts = posts.slice(0, MAX_POSTS);
 
-        　　if (width > maxWidth) {
-          　　height *= maxWidth / width;
-          　　width = maxWidth;
-        　　}
-        　　if (height > maxHeight) {
-          　　width *= maxHeight / height;
-          　　height = maxHeight;
-        　　}
+            localStorage.setItem("posts", JSON.stringify(posts));
+            addPostToTimeline(post);
+        }
 
-        　　const canvas = document.createElement("canvas");
-        　　canvas.width = width;
-        　　canvas.height = height;
-        　　const ctx = canvas.getContext("2d");
-        　　ctx.drawImage(img, 0, 0, width, height);
+        // 🧱 タイムラインに表示
+        function addPostToTimeline(post) {
+            const postDiv = document.createElement('div');
+            postDiv.className = 'post';
+            postDiv.innerHTML = `
+    <div class="post-header">@${post.user} ・ ${post.time}</div>
+    <p>${post.caption}</p>
+    <img src="${post.image}" alt="投稿画像">
+  `;
+            timeline.prepend(postDiv);
+        }
 
-        　　const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
-        　　callback(dataUrl);
-      　　};
-      　　img.src = event.target.result;
-    　　};
-    　　reader.readAsDataURL(file);
-  　　}
-　　</script>
+        // 🖼️ 画像をCanvasで圧縮＋Blob化
+        function resizeImage(file, maxWidth, maxHeight, callback) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const img = new Image();
+                img.onload = function () {
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+                    if (height > maxHeight) {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+
+                    const canvas = document.createElement("canvas");
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob(
+                        (blob) => {
+                            const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+                            callback(dataUrl, blob);
+                        },
+                        "image/jpeg",
+                        0.7
+                    );
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+
 
 </body>
+
 </html>
