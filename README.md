@@ -1,128 +1,93 @@
-# 🧭 Semantic Compression Project (v1.0)
+# 🧭 Semantic Compression Project (v1.2)
 
 An experimental implementation of **semantic communication**,  
 where data is transmitted as *meaning* instead of raw binary.  
 By letting AI interpret, compress, and regenerate content,  
-this project aims to reduce data transfer volume and global energy usage.  
+this project aims to reduce data-transfer volume and global energy usage.  
 
-This repository provides a proof-of-concept via an **AI-assisted SNS demo**  
-where images are “semantically compressed” into AI-generated captions.
-
----
-
-## 🚀 Current Status
-
-### ✅ Version: v1.0 (as of October 2025)
-
-| Component | Status | Notes |
-|------------|---------|-------|
-| GitHub Pages | ✅ Working | Image posting & viewing UI |
-| Cloudflare Worker | ✅ Working | Acts as API relay to OpenAI |
-| OpenAI API | ✅ gpt-4o-mini (vision) | Successfully generates captions |
-| Security | ✅ Completed | `.dev.vars` + Cloudflare Secret |
-| Billing | ✅ Prepaid ($5 test) | Safe, usage-limited setup |
+This repository demonstrates a working prototype through an  
+**AI-assisted SNS demo**, where images are semantically “compressed”  
+into AI-generated captions and safely uploaded via Cloudflare Images.
 
 ---
 
-## ⚙️ System Architecture
+## 🚀 What's New (v1.2)
+
+| Feature | Description |
+|----------|-------------|
+| **Cloudflare Images integration** | Enables secure, CDN-backed image upload from the SNS frontend. |
+| **Worker-based AI bridge** | Cloudflare Worker acts as a middle layer between the frontend and the OpenAI API. |
+| **Vision AI Captioning** | Uses `gpt-4o-mini` to generate semantic captions directly from uploaded images. |
+| **Secure API-key handling** | All secrets managed via `wrangler secret`; none stored in the repo. |
+| **Full E2E flow complete** | SNS → Worker → Cloudflare Images → OpenAI → SNS (display). |
+
+---
+
+## 🧩 Architecture Overview
 
 📦 semantic-compression/
 │
-├── index.html ← SNS demo (image + caption UI)
-│ ├── Form-based upload
-│ ├── LocalStorage persistence & cleanup
-│ └── Sends data to Worker via fetch()
+├── index.html ← Frontend SNS Demo (GitHub Pages)
+│ ├── Image upload form
+│ ├── AI caption generation
+│ └── Timeline feed (localStorage)
 │
-└── semantic-worker/ ← Cloudflare Worker
-├── src/index.js ← OpenAI relay (vision-enabled)
-├── .dev.vars ← Local API key management
-└── wrangler.toml ← Worker configuration
-
-📡 **Flow:**  
-User post → (fetch) → Cloudflare Worker  
-→ OpenAI API (gpt-4o-mini)  
-→ AI caption returned → displayed on SNS
+└── semantic-worker/ ← Cloudflare Worker (v1.2)
+├── src/index.js ← Handles image upload + AI captioning
+├── wrangler.jsonc ← Environment variables + secrets
+└── Cloudflare Secrets:
+• OPENAI_API_KEY
+• CF_IMAGES_TOKEN
+• CF_ACCOUNT_ID
 
 ---
 
-## 🧠 Achievements & Findings
+## ⚙️ Data Flow
 
-### 🎯 Achievements
-- Successful integration of **OpenAI vision API** via Cloudflare Workers  
-- Full SNS-to-AI pipeline for automatic caption generation  
-- Secure handling of API keys using `.dev.vars` + Cloudflare Secret  
-- Validation of semantic compression as a method for communication efficiency  
-
-### ⚠️ Known Technical Limitations
-- Cloudflare Workers limit JSON body size to **1 MB**  
-  → Base64-encoded images cannot be transmitted directly  
-- Current solution: AI fetches **public image URLs** instead of inline Base64  
-
----
-
-## 🔜 Next Steps (v1.1 and beyond)
-
-| Phase | Description |
-|--------|-------------|
-| 🔄 Image URL Automation | Use Cloudflare Images / S3 for temporary image hosting |
-| 🧩 SNS Integration | Auto-attach AI captions to posts |
-| 🧠 Compression Study | Evaluate data loss vs. semantic accuracy |
-| 🌍 Real-world Use | Explore low-bandwidth or disaster communication scenarios |
+User Image
+↓
+Cloudflare Worker (/upload)
+↓
+Cloudflare Images (upload + CDN)
+↓
+OpenAI gpt-4o-mini (Vision caption generation)
+↓
+SNS feed display with AI caption
 
 ---
 
-## 🧪 Development Context
+## 🧠 Tech Highlights
 
-This project is an **independent learning and experimental work**  
-by a beginner developer exploring AI-assisted programming.  
-All code was written and refined in collaboration with **ChatGPT (GPT-5)**,  
-which provided explanations, debugging advice, and generation support.  
-
-The goal is not commercial use, but to **learn, test, and document**  
-the feasibility of AI-driven semantic compression techniques.
+- **Vision + Text AI fusion:** OpenAI `gpt-4o-mini` used for visual semantic extraction.  
+- **Edge-native architecture:** All requests handled through Cloudflare’s global edge network.  
+- **End-to-end privacy:** No raw keys or API credentials exposed client-side.  
+- **Local persistence:** Posts cached client-side via `localStorage`.
 
 ---
 
-## 🪪 License
+## 🔮 Next Steps (v1.3 Planned)
 
-This repository is released under the **[Apache License 2.0](./LICENSE)**.  
-A supplementary **[Japanese summary version](./LICENSE_JA.md)** is also available for reference.  
-
-You are free to use, modify, and distribute this software  
-under the terms of the license, which includes a patent grant to help prevent misuse.
-
----
-
-## 🧩 Project Significance
-
-Semantic communication proposes a shift from transmitting *data*  
-to transmitting the *meaning* behind it.  
-This concept, when scaled, could reduce global data transfer energy consumption  
-and support efficient communication in low-bandwidth environments  
-(such as satellites, IoT, or disaster recovery networks).
+- Implement **reverse semantic generation** → recreate images from captions using OpenAI Image API (`text2im`).  
+- Introduce **semantic tokens** for prompt-level compression.  
+- Add **real-time streaming UI** for AI responses.  
+- Explore **disaster / satellite low-bandwidth** use cases.
 
 ---
 
-### 📅 Update History
+## 💬 Acknowledgments
 
-- **2025-10-07 — v1.0 Completed:** successful AI caption generation  
-- **2025-10-08 → v1.1:** expanding to URL-based and regeneration workflows  
-
----
-
-📬 **Notes from the Author**
-
-This repository is open for experimental and educational purposes.  
-Feedback, research collaboration, or related project references are warmly welcomed.  
+Thanks to the OpenAI API, Cloudflare Workers, and Cloudflare Images teams  
+for providing the ecosystem that made semantic-level communication possible.
 
 ---
 
-## 🧭 Summary
+## 📜 Changelog
 
-| Category | Details |
-|-----------|----------|
-| Development Style | Beginner-led, AI-assisted coding (ChatGPT GPT-5) |
-| Language | JavaScript (Vanilla) + Cloudflare Workers |
-| Model Used | gpt-4o-mini (Vision) |
-| Hosting | GitHub Pages + Cloudflare Workers |
-| License | Apache License 2.0 |
+**v1.0**
+- Basic SNS demo using local image compression and mock AI captions.  
+- Cloudflare Worker established as OpenAI proxy.  
+
+**v1.2**
+- Cloudflare Images integration.  
+- Full E2E semantic upload flow.  
+- Secure secret-based architecture finalized.
