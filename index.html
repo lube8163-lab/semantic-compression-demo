@@ -92,7 +92,7 @@
         const MAX_POSTS = 10;
         const WORKER_URL = "https://semantic-worker.semantic-compression.workers.dev";
 
-        // 🪄 画像をCloudflare ImagesへアップロードしてURLを取得
+        // 🪄 Cloudflare Images へアップロード
         async function uploadImageAndGetUrl(imageBlob) {
             const formData = new FormData();
             formData.append("file", imageBlob, "upload.jpg");
@@ -103,69 +103,72 @@
             });
 
             const data = await response.json();
-            if (data.imageUrl) {
-                console.log("✅ Uploaded:", data.imageUrl);
-                return data.imageUrl;
-            } else {
-                console.error("❌ Upload failed:", data);
-                throw new Error("Upload failed");
-            }
+            if (data.imageUrl) return data.imageUrl;
+            else throw new Error("Upload failed");
         }
 
-        // 🧠 Cloudflare ImagesのURLを使ってAIキャプションを生成
+        // 🧠 画像URLをもとにキャプション生成
         async function generateAICaptionFromUrl(imageUrl) {
-            try {
-                const payload = {
-                    prompt: "この画像の内容を短く説明して",
-                    image_url: { url: imageUrl },
-                };
+            const payload = {
+                prompt: "この画像の内容を短く説明して",
+                image_url: { url: imageUrl },
+            };
+            const response = await fetch(WORKER_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json();
+            return data.choices?.[0]?.message?.content?.trim() || "AI生成失敗…";
+        }
 
-                const response = await fetch(WORKER_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                });
+        // 🎨 キャプションから画像再生成
+        async function regenerateImageFromCaption(caption, postDiv) {
+            const payload = { caption };
+            const response = await fetch(WORKER_URL + "/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
 
-                const data = await response.json();
-                const aiCaption = data.choices?.[0]?.message?.content || "AI生成失敗…";
-                return aiCaption.trim();
-            } catch (error) {
-                console.error("AI生成エラー:", error);
-                return "AI生成エラー";
+            const data = await response.json();
+            if (data.imageUrl) {
+                const img = document.createElement("img");
+                img.src = data.imageUrl;
+                img.alt = "再生成画像";
+                img.style.marginTop = "10px";
+                img.style.border = "1px solid #ccc";
+                img.style.borderRadius = "8px";
+                img.style.maxWidth = "100%";
+                postDiv.appendChild(img);
+            } else {
+                alert("再生成に失敗しました。");
+                console.error("Regeneration failed:", data);
             }
         }
 
-        // 🔁 ページ読み込み時：保存済み投稿を表示
+        // 🔁 保存済み投稿を表示
         window.onload = () => {
             const savedPosts = JSON.parse(localStorage.getItem("posts")) || [];
             timeline.innerHTML = "";
-            savedPosts.reverse().forEach(post => addPostToTimeline(post));
+            savedPosts.reverse().forEach(addPostToTimeline);
         };
 
-        // ✉️ 投稿フォーム送信
+        // ✉️ 投稿処理
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const captionInput = document.getElementById('captionInput').value;
             const file = document.getElementById('imageInput').files[0];
-            if (!file) {
-                alert("画像を選んでね！");
-                return;
-            }
+            if (!file) return alert("画像を選んでね！");
 
-            // まず画像をリサイズしてBlob化
             resizeImage(file, 800, 800, async (compressedDataUrl, blob) => {
                 try {
-                    // Cloudflare ImagesにアップロードしてURL取得
                     const imageUrl = await uploadImageAndGetUrl(blob);
-
-                    // キャプションが空欄ならAI生成
                     let finalCaption = captionInput.trim();
-                    if (!finalCaption) {
-                        finalCaption = await generateAICaptionFromUrl(imageUrl);
-                    }
+                    if (!finalCaption) finalCaption = await generateAICaptionFromUrl(imageUrl);
 
-                    savePost(finalCaption, imageUrl); // ← 保存時もCloudflare ImagesのURLを使用
+                    savePost(finalCaption, imageUrl);
                     form.reset();
                 } catch (err) {
                     console.error("投稿エラー:", err);
@@ -184,29 +187,50 @@
                 user: pseudoUser,
                 time: now.toLocaleString(),
                 caption,
-                image: imageUrl, // ← Base64ではなくURL
+                image: imageUrl,
             };
 
             posts.unshift(post);
             if (posts.length > MAX_POSTS) posts = posts.slice(0, MAX_POSTS);
-
             localStorage.setItem("posts", JSON.stringify(posts));
+
             addPostToTimeline(post);
         }
 
-        // 🧱 タイムラインに表示
+        // 🧱 タイムライン描画
         function addPostToTimeline(post) {
             const postDiv = document.createElement('div');
             postDiv.className = 'post';
             postDiv.innerHTML = `
     <div class="post-header">@${post.user} ・ ${post.time}</div>
     <p>${post.caption}</p>
-    <img src="${post.image}" alt="投稿画像">
+    <img src="${post.image}" alt="投稿画像" style="max-width:100%; border-radius:8px;">
   `;
+
+            // 🪄 再生成ボタンを追加
+            const regenBtn = document.createElement("button");
+            regenBtn.textContent = "🪄 再生成";
+            regenBtn.style.marginTop = "8px";
+            regenBtn.style.background = "#888";
+            regenBtn.style.color = "white";
+            regenBtn.style.border = "none";
+            regenBtn.style.borderRadius = "6px";
+            regenBtn.style.padding = "4px 10px";
+            regenBtn.style.cursor = "pointer";
+
+            regenBtn.addEventListener("click", async () => {
+                regenBtn.disabled = true;
+                regenBtn.textContent = "生成中...";
+                await regenerateImageFromCaption(post.caption, postDiv);
+                regenBtn.textContent = "🪄 再生成";
+                regenBtn.disabled = false;
+            });
+
+            postDiv.appendChild(regenBtn);
             timeline.prepend(postDiv);
         }
 
-        // 🖼️ 画像をCanvasで圧縮＋Blob化
+        // 🖼️ 圧縮用
         function resizeImage(file, maxWidth, maxHeight, callback) {
             const reader = new FileReader();
             reader.onload = function (event) {
@@ -229,7 +253,6 @@
                     canvas.height = height;
                     const ctx = canvas.getContext("2d");
                     ctx.drawImage(img, 0, 0, width, height);
-
                     canvas.toBlob(
                         (blob) => {
                             const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
@@ -244,6 +267,7 @@
             reader.readAsDataURL(file);
         }
     </script>
+
 
 
 </body>
