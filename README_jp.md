@@ -1,76 +1,85 @@
-# 🧭 セマンティック通信プロジェクト (v1.2)
+# 🧭 セマンティック通信プロジェクト（v1.3）
 
-AIを用いてデータを「意味単位（セマンティック）」に圧縮・転送する実験的プロジェクト。  
-これにより、通信量削減とエネルギー消費の低減を目指す。  
+AIを用いてデータを**「意味単位（セマンティック）」**に圧縮・転送し、  
+通信量の削減と情報再構成を実証するプロジェクトです。  
 
-GitHub Pages 上で動作する **AI圧縮SNSデモ** を通して、  
-Cloudflare Images へのアップロード・AIキャプション生成を含む  
-エンドツーエンドのセマンティック通信を実現した。
-
----
-
-## 🚀 v1.2での新要素
-
-| 項目 | 内容 |
-|------|------|
-| **Cloudflare Images統合** | 画像を安全にアップロードし、CDN経由で配信可能に |
-| **Workerによる中継層** | フロントとOpenAI APIをCloudflare Workerで連携 |
-| **Vision AIキャプション生成** | `gpt-4o-mini` による画像の意味抽出と要約 |
-| **Secret管理強化** | `.wrangler secret` による安全なキー管理 |
-| **エンドツーエンド完結** | SNS投稿 → Worker → Cloudflare Images → AI応答 → SNS表示 |
+画像をAIが解釈してキャプション化し（圧縮）、  
+そのキャプションから再び画像を生成（再構成）することで、  
+**「意味の通信」**の仕組みを体験的に示します。
 
 ---
 
-## 🧩 構成概要
+## ⚙️ システム構成
 
-SNSデモ (GitHub Pages)
-↓
-Cloudflare Worker (/upload)
-↓
-Cloudflare Images (アップロード + CDN)
-↓
-OpenAI gpt-4o-mini (Visionによる要約)
-↓
-SNSフィードにAI生成キャプション表示
+| レイヤー | 使用技術 | 目的 |
+|-----------|-----------|------|
+| フロントエンド | HTML + JavaScript | 投稿・圧縮・表示 |
+| ミドルウェア | Cloudflare Worker | OpenAIとの安全な中継 |
+| ストレージ | Cloudflare Images | 一時的な画像ホスティング |
+| AIモデル | gpt-4o-mini / dall-e-3 | キャプション生成・再生成 |
 
 ---
 
-## 💡 技術的特徴
+## 🔁 データフロー（v1.3）
 
-- OpenAIのVisionモデルで **画像→意味** 変換  
-- Cloudflare Edge上で動作する **分散アーキテクチャ**  
-- `.wrangler secret` による **セキュアなAPI管理**  
-- localStorage による **クライアント側キャッシュ**  
-
----
-
-## 🔮 今後の展望 (v1.3以降)
-
-- 「意味 → 画像」再生成（Decompression）の実装  
-- セマンティックトークンによる圧縮精度の最適化  
-- ストリーミング応答対応  
-- 災害通信・衛星通信などの低帯域応用  
+1. 画像を投稿  
+2. Cloudflare Imagesにアップロード  
+3. Workerが `gpt-4o-mini` に送信し、キャプション生成  
+4. キャプションをSNS投稿として表示  
+5. 「🪄 再生成」クリックで `dall-e-3` により画像再生成  
+6. タイムラインに再構成画像を追加表示  
 
 ---
 
-## 🧑‍💻 開発メモ
+## ✅ 実装達成状況
 
-- 環境構築：Mac mini M2 / Cloudflare Wrangler 4.x  
-- API：OpenAI GPT-4o-mini + Cloudflare Images  
-- セキュリティ：APIキーはSecret管理  
-- 現行バージョン：**v1.2（Semantic Upload + Caption）**
+- Cloudflare Worker 中継：完成  
+- AIキャプション生成：動作中  
+- AI再生成：成功（dall-e-3）  
+- セキュリティ管理：Cloudflare Secret対応  
+- 完全な end-to-end semantic pipeline：達成  
+
+---
+
+## 🚀 今後の展開（v1.4 以降）
+
+### 🎯 自動再生成 & 元画像削除
+
+- 投稿時に自動でキャプション生成→再生成まで一括処理  
+- 元画像を非表示・サーバーからも削除  
+- タイムラインには再構成画像のみを残す  
+
+これにより、**「意味だけを通信して再構成する」**  
+セマンティック通信の純粋な形が完成します。
 
 ---
 
-## 📜 変更履歴
+## 🔬 研究的方向性
 
-**v1.0**
-- SNSデモの基礎構築  
-- Cloudflare Worker経由でのOpenAI通信テスト  
-
-**v1.2**
-- Cloudflare Images対応  
-- Visionモデルとの統合  
-- フルE2E通信フロー完成  
+- 意味伝達効率の定量化（通信コスト・エネルギー削減）  
+- 意味再現性（Semantic Fidelity）の評価  
+- 意味圧縮の多段再帰的検証  
+- トークン化された意味伝送の研究  
+- 災害・衛星通信など低帯域環境での応用  
 
 ---
+
+## 🧰 構成概要
+
+📁 semantic-compression/
+│
+├── index.html ← フロントエンド（GitHub Pages）
+│ └── 画像投稿・キャプション生成・再生成UI
+│
+└── semantic-worker/
+├── src/index.js ← Cloudflare Worker（gpt-4o-mini + dall-e-3）
+├── .dev.vars ← ローカルAPIキー管理
+├── wrangler.jsonc ← Worker設定（CF_ACCOUNT_ID等）
+└── Cloudflare Secrets により安全に管理
+
+---
+
+## 📄 ライセンス
+
+本プロジェクトは非商用・研究目的のオープン実験です。  
+生成結果は教育・研究用途に限り自由に利用できます。
