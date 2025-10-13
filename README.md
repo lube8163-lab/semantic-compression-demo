@@ -1,93 +1,137 @@
-# 🧭 Semantic Compression Project (v1.2)
+# 🧭 Semantic Compression Project (v1.3)
 
 An experimental implementation of **semantic communication**,  
 where data is transmitted as *meaning* instead of raw binary.  
-By letting AI interpret, compress, and regenerate content,  
-this project aims to reduce data-transfer volume and global energy usage.  
 
-This repository demonstrates a working prototype through an  
-**AI-assisted SNS demo**, where images are semantically “compressed”  
-into AI-generated captions and safely uploaded via Cloudflare Images.
+By letting AI interpret, compress, and regenerate visual content,  
+this project demonstrates the concept of *semantic-level data transmission* —  
+sending only the "meaning" and reconstructing the original image on the receiver side.
 
 ---
 
-## 🚀 What's New (v1.2)
+## 🌐 Overview
 
-| Feature | Description |
-|----------|-------------|
-| **Cloudflare Images integration** | Enables secure, CDN-backed image upload from the SNS frontend. |
-| **Worker-based AI bridge** | Cloudflare Worker acts as a middle layer between the frontend and the OpenAI API. |
-| **Vision AI Captioning** | Uses `gpt-4o-mini` to generate semantic captions directly from uploaded images. |
-| **Secure API-key handling** | All secrets managed via `wrangler secret`; none stored in the repo. |
-| **Full E2E flow complete** | SNS → Worker → Cloudflare Images → OpenAI → SNS (display). |
+This repository provides a full working proof-of-concept (v1.3)  
+where an image is semantically compressed into an AI-generated caption,  
+then decompressed back into a regenerated image — all processed via  
+Cloudflare Workers and OpenAI APIs.
+
+The ultimate goal is to enable **low-bandwidth, high-meaning communication**,  
+where only the semantic representation (text or embedding) is transmitted.
 
 ---
 
-## 🧩 Architecture Overview
+## 🧩 Architecture
 
-📦 semantic-compression/
+📷 Image (Sender)
+↓ Semantic Compression (AI Caption)
+🧾 Caption (Meaning Data)
+↓ Semantic Decompression (AI Regeneration)
+🖼️ Reconstructed Image (Receiver)
+
+---
+
+## ⚙️ System Components
+
+| Layer | Technology | Purpose |
+|-------|-------------|----------|
+| Frontend | HTML + JS (GitHub Pages) | Upload, compress, and display posts |
+| Middleware | Cloudflare Worker | Secure relay between browser and OpenAI |
+| Storage | Cloudflare Images | Temporary hosting for uploaded images |
+| AI Models | gpt-4o-mini / dall-e-3 | Caption generation & image regeneration |
+
+---
+
+## 🔁 Processing Flow (v1.3)
+
+1. User uploads an image from browser  
+2. Image is resized and uploaded to Cloudflare Images  
+3. Cloudflare Worker sends the image URL to OpenAI (`gpt-4o-mini`) for caption generation  
+4. Caption text is returned to the browser and displayed as a post  
+5. User clicks **🪄 Regenerate**  
+6. Worker sends caption → OpenAI (`dall-e-3`) → reconstructed image  
+7. Generated image is shown below the post  
+
+---
+
+## ✅ Achievements (v1.3)
+
+| Feature | Status |
+|----------|--------|
+| Cloudflare Worker (proxy & storage) | ✅ Completed |
+| Image upload (Cloudflare Images API) | ✅ Completed |
+| Vision-based caption generation (gpt-4o-mini) | ✅ Working |
+| Caption → Image regeneration (dall-e-3) | ✅ Working |
+| URL-based data exchange (no Base64 limit) | ✅ Stable |
+| LocalStorage SNS demo | ✅ Functional prototype |
+
+---
+
+## 🧠 Semantic Insight
+
+This prototype demonstrates that an image can be  
+**reconstructed from its semantic representation** —  
+effectively transmitting the "meaning" rather than the pixels.  
+
+Even if visual fidelity is imperfect,  
+the **semantic continuity** is preserved across compression and decompression.  
+This establishes a practical foundation for next-generation  
+communication protocols beyond bit-level data.
+
+---
+
+## 🔐 Security & Stability
+
+- **API keys** handled via Cloudflare Secrets  
+- **Account ID** stored in Worker vars  
+- **No image data** included in public repositories  
+- **Upload limit control:** Large base64 payloads avoided through Cloudflare Images URL pipeline
+
+---
+
+## 🚀 Future Work (v1.4 and beyond)
+
+### 🎯 v1.4: Auto Regeneration + Source Erasure
+
+- Automate full cycle:  
+  Upload → Caption → Regenerate → Delete source  
+- Run captioning and regeneration entirely on the server side  
+- Display only the regenerated (semantic) image in timeline  
+- Remove original images from Cloudflare after use  
+
+This would realize the **pure semantic communication loop**,  
+where only the "meaning" is transmitted between sender and receiver.
+
+---
+
+## 🔬 Research Directions
+
+| Focus | Goal |
+|--------|------|
+| **Information Efficiency** | Measure bandwidth and energy reduction |
+| **Semantic Fidelity** | Quantify meaning retention vs pixel similarity |
+| **Recursive Compression** | Test iterative meaning regeneration cycles |
+| **Embedding-based Transmission** | Replace captions with compact semantic tokens |
+| **Disaster / Satellite Communication** | Apply to extreme low-bandwidth scenarios |
+
+---
+
+## 🧰 Tech Stack Summary
+
+📁 semantic-compression/
 │
-├── index.html ← Frontend SNS Demo (GitHub Pages)
-│ ├── Image upload form
-│ ├── AI caption generation
-│ └── Timeline feed (localStorage)
+├── index.html ← Frontend SNS demo (GitHub Pages)
+│ └── Image upload / Caption / Regeneration UI
 │
-└── semantic-worker/ ← Cloudflare Worker (v1.2)
-├── src/index.js ← Handles image upload + AI captioning
-├── wrangler.jsonc ← Environment variables + secrets
-└── Cloudflare Secrets:
-• OPENAI_API_KEY
-• CF_IMAGES_TOKEN
-• CF_ACCOUNT_ID
+└── semantic-worker/
+├── src/index.js ← Cloudflare Worker (gpt-4o-mini + dall-e-3)
+├── .dev.vars ← Local API keys
+├── wrangler.jsonc ← Worker config (CF_ACCOUNT_ID etc.)
+└── Cloudflare Secrets managed securely
 
 ---
 
-## ⚙️ Data Flow
+## 📜 License
 
-User Image
-↓
-Cloudflare Worker (/upload)
-↓
-Cloudflare Images (upload + CDN)
-↓
-OpenAI gpt-4o-mini (Vision caption generation)
-↓
-SNS feed display with AI caption
-
----
-
-## 🧠 Tech Highlights
-
-- **Vision + Text AI fusion:** OpenAI `gpt-4o-mini` used for visual semantic extraction.  
-- **Edge-native architecture:** All requests handled through Cloudflare’s global edge network.  
-- **End-to-end privacy:** No raw keys or API credentials exposed client-side.  
-- **Local persistence:** Posts cached client-side via `localStorage`.
-
----
-
-## 🔮 Next Steps (v1.3 Planned)
-
-- Implement **reverse semantic generation** → recreate images from captions using OpenAI Image API (`text2im`).  
-- Introduce **semantic tokens** for prompt-level compression.  
-- Add **real-time streaming UI** for AI responses.  
-- Explore **disaster / satellite low-bandwidth** use cases.
-
----
-
-## 💬 Acknowledgments
-
-Thanks to the OpenAI API, Cloudflare Workers, and Cloudflare Images teams  
-for providing the ecosystem that made semantic-level communication possible.
-
----
-
-## 📜 Changelog
-
-**v1.0**
-- Basic SNS demo using local image compression and mock AI captions.  
-- Cloudflare Worker established as OpenAI proxy.  
-
-**v1.2**
-- Cloudflare Images integration.  
-- Full E2E semantic upload flow.  
-- Secure secret-based architecture finalized.
+This project is open and experimental.  
+All generated data is non-commercial and for research demonstration only.
