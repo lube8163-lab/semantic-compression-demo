@@ -1,210 +1,199 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>Semantic Communication v1.4 Demo</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f0f2f5;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #fff;
-      border-bottom: 1px solid #ddd;
-      padding: 10px 20px;
-      font-weight: bold;
-      font-size: 20px;
-      position: sticky;
-      top: 0;
-    }
-    #container {
-      max-width: 600px;
-      margin: 20px auto;
-    }
-    #postForm {
-      background: #fff;
-      padding: 15px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    #postForm textarea {
-      width: 100%;
-      resize: none;
-    }
-    #postForm button {
-      background: #1d9bf0;
-      color: white;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 20px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-    .post {
-      background: #fff;
-      padding: 15px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      margin-bottom: 15px;
-    }
-    .post-header {
-      font-size: 14px;
-      color: #555;
-      margin-bottom: 10px;
-    }
-    .post img {
-      max-width: 100%;
-      border-radius: 8px;
-    }
-  </style>
-</head>
-<body>
-  <header>Semantic Communication v1.4</header>
-  <div id="container">
-
-    <!-- 投稿フォーム -->
-    <form id="postForm">
-      <input type="file" id="imageInput" accept="image/*"><br><br>
-      <button type="submit">意味送信（投稿）</button>
-    </form>
-
-    <!-- タイムライン -->
-    <div id="timeline"></div>
-  </div>
-
-  <script>
-    const form = document.getElementById('postForm');
-    const timeline = document.getElementById('timeline');
-    const MAX_POSTS = 10;
-    const WORKER_URL = "https://semantic-worker.semantic-compression.workers.dev";
-
-    // 🧩 v1.4: /auto エンドポイントを呼び出す
-    async function autoGenerate(imageBlob) {
-      const formData = new FormData();
-      formData.append("file", imageBlob, "upload.jpg");
-
-      const response = await fetch(WORKER_URL + "/auto", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-      if (!data.imageUrl) throw new Error("Regeneration failed");
-      return data; // { caption, imageUrl }
-    }
-
-    // 🔁 ページ読み込み時に投稿履歴を表示
-    window.onload = () => {
-      const savedPosts = JSON.parse(localStorage.getItem("posts")) || [];
-      timeline.innerHTML = "";
-      savedPosts.reverse().forEach(addPostToTimeline);
+export default {
+  async fetch(request, env) {
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
     };
 
-    // ✉️ 投稿処理
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const file = document.getElementById("imageInput").files[0];
-      if (!file) return alert("画像を選んでね！");
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
+    }
 
-      resizeImage(file, 800, 800, async (compressedDataUrl, blob) => {
-        try {
-          addTemporaryPost(); // 「生成中…」表示
-          const { caption, imageUrl } = await autoGenerate(blob);
-          savePost(caption, imageUrl);
-          form.reset();
-        } catch (err) {
-          console.error("投稿エラー:", err);
-          alert("投稿中にエラーが発生しました。");
+    const url = new URL(request.url);
+
+    try {
+      // ============================================================
+      // 🧩 ① /auto → Upload → Caption → Regenerate → Delete original
+      // ============================================================
+      if (url.pathname === "/auto") {
+        const formData = await request.formData();
+        const file = formData.get("file");
+        if (!file) {
+          return new Response(JSON.stringify({ error: "No file provided" }), {
+            status: 400,
+            headers: corsHeaders,
+          });
         }
-      });
-    });
 
-    // 🪄 一時的に「生成中...」を表示
-    function addTemporaryPost() {
-      const tempDiv = document.createElement("div");
-      tempDiv.className = "post";
-      tempDiv.id = "tempPost";
-      tempDiv.innerHTML = `
-        <div class="post-header">生成中...</div>
-        <p>AIが意味を解析しています...</p>
-      `;
-      timeline.prepend(tempDiv);
-    }
-
-    // 💾 投稿を保存して表示
-    function savePost(caption, imageUrl) {
-      let posts = JSON.parse(localStorage.getItem("posts")) || [];
-      const now = new Date();
-      const pseudoUser = "user_" + now.getHours() + now.getMinutes();
-
-      const post = {
-        user: pseudoUser,
-        time: now.toLocaleString(),
-        caption,
-        image: imageUrl,
-      };
-
-      posts.unshift(post);
-      if (posts.length > MAX_POSTS) posts = posts.slice(0, MAX_POSTS);
-      localStorage.setItem("posts", JSON.stringify(posts));
-
-      // 「生成中...」を削除してから新しい投稿を描画
-      const temp = document.getElementById("tempPost");
-      if (temp) temp.remove();
-      addPostToTimeline(post);
-    }
-
-    // 🧱 タイムラインに投稿を追加
-    function addPostToTimeline(post) {
-      const postDiv = document.createElement("div");
-      postDiv.className = "post";
-      postDiv.innerHTML = `
-        <div class="post-header">@${post.user} ・ ${post.time}</div>
-        <p>${post.caption}</p>
-        <img src="${post.image}" alt="AI再構成画像">
-      `;
-      timeline.prepend(postDiv);
-    }
-
-    // 🖼️ 圧縮
-    function resizeImage(file, maxWidth, maxHeight, callback) {
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        const img = new Image();
-        img.onload = function () {
-          let width = img.width;
-          let height = img.height;
-
-          if (width > maxWidth) {
-            height *= maxWidth / width;
-            width = maxWidth;
-          }
-          if (height > maxHeight) {
-            width *= maxHeight / height;
-            height = maxHeight;
-          }
-
-          const canvas = document.createElement("canvas");
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, width, height);
-          canvas.toBlob(
-            (blob) => {
-              const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
-              callback(dataUrl, blob);
+        // 1️⃣ Upload to Cloudflare Images
+        const uploadResp = await fetch(
+          `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/images/v1`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${env.CF_IMAGES_TOKEN}`,
             },
-            "image/jpeg",
-            0.7
+            body: formData,
+          }
+        );
+        const uploadData = await uploadResp.json();
+        if (!uploadData.success) {
+          console.error("❌ Upload failed:", uploadData.errors);
+          return new Response(
+            JSON.stringify({ error: "Upload failed", details: uploadData.errors }),
+            { status: 500, headers: corsHeaders }
           );
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
+        }
+
+        const imageUrl = uploadData.result.variants[0];
+        const imageId = uploadData.result.id;
+        console.log("✅ Uploaded:", imageUrl);
+
+        // 2️⃣ Generate caption
+        const capResp = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: "この画像の内容を短く説明して" },
+                  { type: "image_url", image_url: { url: imageUrl } },
+                ],
+              },
+            ],
+          }),
+        });
+
+        const capData = await capResp.json();
+        const caption = capData.choices?.[0]?.message?.content?.trim() || "AI生成失敗…";
+        console.log(`🧠 Caption: ${caption.slice(0, 50)}...`);
+
+        // 3️⃣ Regenerate image
+        const regenResp = await fetch("https://api.openai.com/v1/images/generations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "dall-e-3",
+            prompt: caption,
+            size: "1024x1024",
+          }),
+        });
+
+        const regenData = await regenResp.json();
+        const regenUrl = regenData.data?.[0]?.url;
+        if (!regenUrl) {
+          console.error("❌ Regeneration failed:", regenData.error?.message || regenData);
+          return new Response(
+            JSON.stringify({ error: "Regeneration failed", details: regenData.error }),
+            { status: 500, headers: corsHeaders }
+          );
+        }
+
+        console.log(`🎨 Regenerated image: ${regenUrl}`);
+
+        // 4️⃣ Delete original image (ephemeral storage)
+        await fetch(
+          `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/images/v1/${imageId}`,
+          {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${env.CF_IMAGES_TOKEN}` },
+          }
+        );
+        console.log(`🗑️ Deleted source image: ${imageId}`);
+
+        // 5️⃣ Return final response
+        return new Response(
+          JSON.stringify({ caption, imageUrl: regenUrl }),
+          { headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      // ============================================================
+      // 🖼️ 既存の /upload・/generate・default ハンドラも維持
+      // ============================================================
+
+      if (url.pathname === "/upload") {
+        const formData = await request.formData();
+        const file = formData.get("file");
+        if (!file) {
+          return new Response(JSON.stringify({ error: "No file provided" }), {
+            status: 400,
+            headers: corsHeaders,
+          });
+        }
+
+        const uploadResp = await fetch(
+          `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/images/v1`,
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${env.CF_IMAGES_TOKEN}` },
+            body: formData,
+          }
+        );
+
+        const result = await uploadResp.json();
+        const imageUrl = result.result.variants[0];
+        return new Response(JSON.stringify({ imageUrl }), {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+
+      if (url.pathname === "/generate") {
+        const input = await request.json();
+        const caption = input.caption || "an abstract visual representation";
+
+        const genResp = await fetch("https://api.openai.com/v1/images/generations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "dall-e-3",
+            prompt: caption,
+            size: "1024x1024",
+          }),
+        });
+
+        const data = await genResp.json();
+        if (!data.data?.[0]?.url) {
+          console.error("❌ Generation failed:", data.error?.message || "Unknown error");
+          return new Response(
+            JSON.stringify({ error: "Generation failed", details: data.error }),
+            { status: 500, headers: corsHeaders }
+          );
+        }
+
+        const imageUrl = data.data[0].url;
+        console.log(`🎨 Image generated OK for caption: ${caption.slice(0, 30)}...`);
+
+        return new Response(JSON.stringify({ imageUrl }), {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+
+      // default
+      return new Response("Semantic Worker v1.4 running!", {
+        headers: corsHeaders,
+      });
+    } catch (err) {
+      console.error("Worker Error:", err);
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 500,
+        headers: corsHeaders,
+      });
     }
-  </script>
-</body>
-</html>
+  },
+};
