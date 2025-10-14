@@ -95,8 +95,8 @@ Result: Regenerated image only
 
 ## 📜 License
 
-This project is released under the **MIT License**  
-and is open for collaboration, experimentation, and educational use.
+This project is released under the **Apache License 2.0**,  
+allowing personal, academic, and commercial use, with attribution required.
 
 ---
 
