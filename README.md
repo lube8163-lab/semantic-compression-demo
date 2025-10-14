@@ -1,137 +1,111 @@
-# 🧭 Semantic Compression Project (v1.3)
+# 🧭 Semantic Compression Project
 
 An experimental implementation of **semantic communication**,  
 where data is transmitted as *meaning* instead of raw binary.  
+By letting AI interpret, compress, and regenerate content,  
+this project aims to reduce data transfer volume and global energy usage.
 
-By letting AI interpret, compress, and regenerate visual content,  
-this project demonstrates the concept of *semantic-level data transmission* —  
-sending only the "meaning" and reconstructing the original image on the receiver side.
-
----
-
-## 🌐 Overview
-
-This repository provides a full working proof-of-concept (v1.3)  
-where an image is semantically compressed into an AI-generated caption,  
-then decompressed back into a regenerated image — all processed via  
-Cloudflare Workers and OpenAI APIs.
-
-The ultimate goal is to enable **low-bandwidth, high-meaning communication**,  
-where only the semantic representation (text or embedding) is transmitted.
+This repository serves as a proof-of-concept of **AI-driven meaning-level transmission**,  
+demonstrating how images can be shared through captions and regenerated on the receiver side —  
+without the original file ever being stored or transmitted.
 
 ---
 
-## 🧩 Architecture
+## 🌍 Project Overview
 
-📷 Image (Sender)
-↓ Semantic Compression (AI Caption)
-🧾 Caption (Meaning Data)
-↓ Semantic Decompression (AI Regeneration)
-🖼️ Reconstructed Image (Receiver)
-
----
-
-## ⚙️ System Components
-
-| Layer | Technology | Purpose |
-|-------|-------------|----------|
-| Frontend | HTML + JS (GitHub Pages) | Upload, compress, and display posts |
-| Middleware | Cloudflare Worker | Secure relay between browser and OpenAI |
-| Storage | Cloudflare Images | Temporary hosting for uploaded images |
-| AI Models | gpt-4o-mini / dall-e-3 | Caption generation & image regeneration |
+| Goal | Description |
+|------|-------------|
+| **Reduce communication energy** | By transmitting only *semantic content* (captions, descriptions) instead of raw media |
+| **Enable low-bandwidth rich data** | Suitable for satellite and emergency communication environments |
+| **Enhance privacy** | Original media is deleted after processing; only regenerated data remains |
+| **AI integrity check** | Every piece of content passes through AI filters, enabling automatic verification |
+| **Cross-platform vision** | To be integrated in both web-based demos and native iOS apps |
 
 ---
 
-## 🔁 Processing Flow (v1.3)
+## 🧩 Current Version Tree
 
-1. User uploads an image from browser  
-2. Image is resized and uploaded to Cloudflare Images  
-3. Cloudflare Worker sends the image URL to OpenAI (`gpt-4o-mini`) for caption generation  
-4. Caption text is returned to the browser and displayed as a post  
-5. User clicks **🪄 Regenerate**  
-6. Worker sends caption → OpenAI (`dall-e-3`) → reconstructed image  
-7. Generated image is shown below the post  
-
----
-
-## ✅ Achievements (v1.3)
-
-| Feature | Status |
-|----------|--------|
-| Cloudflare Worker (proxy & storage) | ✅ Completed |
-| Image upload (Cloudflare Images API) | ✅ Completed |
-| Vision-based caption generation (gpt-4o-mini) | ✅ Working |
-| Caption → Image regeneration (dall-e-3) | ✅ Working |
-| URL-based data exchange (no Base64 limit) | ✅ Stable |
-| LocalStorage SNS demo | ✅ Functional prototype |
-
----
-
-## 🧠 Semantic Insight
-
-This prototype demonstrates that an image can be  
-**reconstructed from its semantic representation** —  
-effectively transmitting the "meaning" rather than the pixels.  
-
-Even if visual fidelity is imperfect,  
-the **semantic continuity** is preserved across compression and decompression.  
-This establishes a practical foundation for next-generation  
-communication protocols beyond bit-level data.
-
----
-
-## 🔐 Security & Stability
-
-- **API keys** handled via Cloudflare Secrets  
-- **Account ID** stored in Worker vars  
-- **No image data** included in public repositories  
-- **Upload limit control:** Large base64 payloads avoided through Cloudflare Images URL pipeline
-
----
-
-## 🚀 Future Work (v1.4 and beyond)
-
-### 🎯 v1.4: Auto Regeneration + Source Erasure
-
-- Automate full cycle:  
-  Upload → Caption → Regenerate → Delete source  
-- Run captioning and regeneration entirely on the server side  
-- Display only the regenerated (semantic) image in timeline  
-- Remove original images from Cloudflare after use  
-
-This would realize the **pure semantic communication loop**,  
-where only the "meaning" is transmitted between sender and receiver.
-
----
-
-## 🔬 Research Directions
-
-| Focus | Goal |
-|--------|------|
-| **Information Efficiency** | Measure bandwidth and energy reduction |
-| **Semantic Fidelity** | Quantify meaning retention vs pixel similarity |
-| **Recursive Compression** | Test iterative meaning regeneration cycles |
-| **Embedding-based Transmission** | Replace captions with compact semantic tokens |
-| **Disaster / Satellite Communication** | Apply to extreme low-bandwidth scenarios |
-
----
-
-## 🧰 Tech Stack Summary
-
-📁 semantic-compression/
+semantic-compression/
 │
-├── index.html ← Frontend SNS demo (GitHub Pages)
-│ └── Image upload / Caption / Regeneration UI
+├── README.md ← This document (core philosophy)
 │
-└── semantic-worker/
-├── src/index.js ← Cloudflare Worker (gpt-4o-mini + dall-e-3)
-├── .dev.vars ← Local API keys
-├── wrangler.jsonc ← Worker config (CF_ACCOUNT_ID etc.)
-└── Cloudflare Secrets managed securely
+├── web/
+│ ├── v1.0/ ← Initial Proof of Concept
+│ ├── v1.3/ ← Manual regeneration phase
+│ ├── v1.4/ ← Auto regeneration + Cloudflare image deletion ✅
+│ └── README_web.md ← Web-side documentation summary
+│
+├── ios/
+│ ├── v1.5/ ← SwiftUI prototype (local AI in development)
+│ └── README_ios.md ← iOS-side documentation summary
+│
+├── docs/
+│ ├── architecture_flow_v1.4.png
+│ ├── design_concept.md
+│ └── paper_outline.md
+│
+├── LICENSE
+└── index.html ← GitHub Pages demo (latest web build)
+
+---
+
+## ⚙️ Tech Stack
+
+| Component | Purpose | Tools |
+|------------|----------|--------|
+| **Frontend** | Web demo UI | HTML, Vanilla JS |
+| **Backend** | AI caption + image regeneration | Cloudflare Workers |
+| **Storage** | Temporary image handling | Cloudflare Images |
+| **AI Models** | Semantic compression + reconstruction | OpenAI GPT-4o-mini, DALL·E-3 |
+| **iOS (planned)** | Local offline mode | SwiftUI + CoreML backend |
+
+---
+
+## 🧠 Communication Flow (v1.4)
+
+User uploads image
+↓
+Cloudflare Worker → uploads to Cloudflare Images
+↓
+GPT-4o-mini → generates semantic caption
+↓
+DALL·E-3 → regenerates image from meaning
+↓
+Cloudflare → deletes original image
+↓
+Result: Regenerated image only
+
+✅ Meaning transmitted,  
+🗑️ Original data erased,  
+🌱 Energy footprint minimized.
+
+---
+
+## 🚀 Next Steps
+
+- **v1.5 (iOS Prototype)**  
+  - Local AI compression + regeneration via CoreML  
+  - Offline mode: zero server dependency  
+
+- **v2.0 (Cross-device semantic sync)**  
+  - Multi-user meaning-based communication  
+  - Tokenized semantic data transmission (SNS-scale)
 
 ---
 
 ## 📜 License
 
-This project is open and experimental.  
-All generated data is non-commercial and for research demonstration only.
+This project is released under the **MIT License**  
+and is open for collaboration, experimentation, and educational use.
+
+---
+
+## 💬 Acknowledgements
+
+Created by **lube8163-lab**, with support from **OpenAI’s GPT-5**  
+and Cloudflare’s developer ecosystem.  
+
+> “Transmit *meaning*, not data.”  
+> — *Semantic Compression Project*
+
+---
