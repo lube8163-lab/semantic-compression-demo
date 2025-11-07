@@ -18,5 +18,35 @@
     "userText": "今日の夜景、やっぱり最高だった！",
     "hasImage": false,
     "createdAt": "2025-11-07T11:00:00Z"
+  },
+  {
+    "id": "C3",
+    "userName": "Charlie",
+    "userAvatar": "https://example.com/avatar/charlie.png",
+    "caption": "霧に包まれた森。",
+    "semanticPrompt": "dense forest in morning fog, soft light, cinematic",
+    "userText": null,
+    "hasImage": true,
+    "createdAt": "2025-11-07T12:00:00Z"
+  },
+  {
+    "id": "D4",
+    "userName": "Daisy",
+    "userAvatar": "https://example.com/avatar/daisy.png",
+    "caption": null,
+    "semanticPrompt": null,
+    "userText": "今日はカフェでのんびり☕️",
+    "hasImage": false,
+    "createdAt": "2025-11-07T13:00:00Z"
+  },
+  {
+    "id": "E5",
+    "userName": "Eve",
+    "userAvatar": "https://example.com/avatar/eve.png",
+    "caption": "星空の下のテント。",
+    "semanticPrompt": "camping tent under night sky, milky way, soft glow",
+    "userText": null,
+    "hasImage": true,
+    "createdAt": "2025-11-07T14:00:00Z"
   }
 ]
