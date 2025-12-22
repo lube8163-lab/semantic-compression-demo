@@ -28,4 +28,4 @@ This privacy policy may be updated during the beta period.
 
 Contact
 For questions about this policy, please contact:
-your-email@example.com
+lube8163@icloud.com
