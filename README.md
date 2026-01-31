@@ -1,13 +1,31 @@
 # 🧭 Semantic Compression Project
 
 An experimental implementation of **semantic communication**,  
-where data is transmitted as *meaning* instead of raw binary.  
-By letting AI interpret, compress, and regenerate content,  
-this project aims to reduce data transfer volume and global energy usage.
+where data is transmitted as *meaning* instead of raw binary.
 
-This repository serves as a proof-of-concept of **AI-driven meaning-level transmission**,  
-demonstrating how images can be shared through captions and regenerated on the receiver side —  
-without the original file ever being stored or transmitted.
+By letting AI interpret, compress, and regenerate content,  
+this project explores how communication systems can reduce data transfer volume,
+energy consumption, and privacy risks by operating at the **semantic level** rather than the file level.
+
+This repository serves as the **conceptual and experimental core** of the Semantic Compression project.
+
+---
+
+## 📦 Related Repositories
+
+The Semantic Compression project has evolved into multiple independent implementations.
+
+This repository focuses on **core philosophy, early experiments, and web-based proof-of-concepts**.
+
+Actively developed application-level implementations live in separate repositories:
+
+- **Mim (iOS App)**  
+  An experimental, on-device iOS social app based on semantic compression,  
+  distributed via TestFlight.  
+  👉 https://github.com/lube8163-lab/mim-ios
+
+This separation allows research and theory to remain lightweight,
+while user-facing applications evolve independently.
 
 ---
 
@@ -15,97 +33,106 @@ without the original file ever being stored or transmitted.
 
 | Goal | Description |
 |------|-------------|
-| **Reduce communication energy** | By transmitting only *semantic content* (captions, descriptions) instead of raw media |
-| **Enable low-bandwidth rich data** | Suitable for satellite and emergency communication environments |
-| **Enhance privacy** | Original media is deleted after processing; only regenerated data remains |
-| **AI integrity check** | Every piece of content passes through AI filters, enabling automatic verification |
-| **Cross-platform vision** | To be integrated in both web-based demos and native iOS apps |
+| **Reduce communication energy** | Transmit *semantic content* instead of raw media |
+| **Enable low-bandwidth richness** | Operable in satellite or emergency environments |
+| **Enhance privacy** | Original media is deleted after semantic extraction |
+| **AI-mediated integrity** | All content passes through AI interpretation layers |
+| **Cross-platform vision** | Concepts applicable to web, mobile, and offline systems |
 
 ---
 
-## 🧩 Current Version Tree
+## 🧩 Repository Structure
 
+```text
 semantic-compression/
 │
-├── README.md ← This document (core philosophy)
+├── README.md              ← Core philosophy and project overview
 │
 ├── web/
-│ ├── v1.0/ ← Initial Proof of Concept
-│ ├── v1.3/ ← Manual regeneration phase
-│ ├── v1.4/ ← Auto regeneration + Cloudflare image deletion ✅
-│ └── README_web.md ← Web-side documentation summary
+│   ├── v1.0/              ← Initial proof of concept
+│   ├── v1.3/              ← Manual regeneration phase
+│   ├── v1.4/              ← Auto regeneration + Cloudflare image deletion ✅
+│   └── README_web.md      ← Web-side documentation summary
 │
 ├── ios/
-│ ├── v1.5/ ← SwiftUI prototype (local AI in development)
-│ └── README_ios.md ← iOS-side documentation summary
+│   ├── v1.5/              ← Early SwiftUI prototype (research / local AI exploration)
+│   └── README_ios.md      ← Notes on early iOS experiments
 │
 ├── docs/
-│ ├── architecture_flow_v1.4.png
-│ ├── design_concept.md
-│ └── paper_outline.md
+│   ├── architecture_flow_v1.4.png
+│   ├── design_concept.md
+│   └── paper_outline.md
 │
 ├── LICENSE
-└── index.html ← GitHub Pages demo (latest web build)
+└── index.html             ← GitHub Pages demo (latest web build)
+```
+
+
+> Note:  
+> The actively distributed iOS application has been separated into its own repository  
+> to focus on user-facing design, privacy guarantees, and TestFlight distribution.
 
 ---
 
 ## ⚙️ Tech Stack
 
 | Component | Purpose | Tools |
-|------------|----------|--------|
+|----------|---------|-------|
 | **Frontend** | Web demo UI | HTML, Vanilla JS |
-| **Backend** | AI caption + image regeneration | Cloudflare Workers |
+| **Backend** | Semantic extraction & regeneration | Cloudflare Workers |
 | **Storage** | Temporary image handling | Cloudflare Images |
-| **AI Models** | Semantic compression + reconstruction | OpenAI GPT-4o-mini, DALL·E-3 |
-| **iOS (planned)** | Local offline mode | SwiftUI + CoreML backend |
+| **AI Models** | Semantic compression & reconstruction | GPT-4o-mini, DALL·E 3 |
+| **iOS (research)** | Early local AI exploration | SwiftUI, CoreML |
+
+For the production-oriented iOS application, see the **Mim** repository.
 
 ---
 
-## 🧠 Communication Flow (v1.4)
-
+## 🧠 Communication Flow (Web v1.4)
+```text
 User uploads image
 ↓
 Cloudflare Worker → uploads to Cloudflare Images
 ↓
-GPT-4o-mini → generates semantic caption
+AI model → generates semantic caption
 ↓
-DALL·E-3 → regenerates image from meaning
+Image generation model → reconstructs image from meaning
 ↓
 Cloudflare → deletes original image
 ↓
-Result: Regenerated image only
+Result: regenerated image only
+```
 
-✅ Meaning transmitted,  
-🗑️ Original data erased,  
-🌱 Energy footprint minimized.
+✅ Meaning transmitted  
+🗑️ Original data erased  
+🌱 Energy footprint minimized  
 
 ---
 
-## 🚀 Next Steps
+## 🚀 Next Steps (This Repository)
 
-- **v1.5 (iOS Prototype)**  
-  - Local AI compression + regeneration via CoreML  
-  - Offline mode: zero server dependency  
+- Further refinement of semantic communication theory
+- Documentation of architecture and design philosophy
+- Exploration of non-visual semantic modalities (text, audio, symbolic data)
+- Preparation of academic or long-form explanatory materials
 
-- **v2.0 (Cross-device semantic sync)**  
-  - Multi-user meaning-based communication  
-  - Tokenized semantic data transmission (SNS-scale)
+> Application-level development continues independently in related repositories.
 
 ---
 
 ## 📜 License
 
 This project is released under the **Apache License 2.0**,  
-allowing personal, academic, and commercial use, with attribution required.
+allowing personal, academic, and commercial use with attribution.
 
 ---
 
 ## 💬 Acknowledgements
 
-Created by **lube8163-lab**, with support from **OpenAI’s GPT-5**  
-and Cloudflare’s developer ecosystem.  
+Created by **lube8163-lab**, with support from OpenAI’s language models  
+and Cloudflare’s developer ecosystem.
 
 > “Transmit *meaning*, not data.”  
 > — *Semantic Compression Project*
 
----
+
