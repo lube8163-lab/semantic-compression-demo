@@ -118,6 +118,32 @@ Result: regenerated image only
 
 > Application-level development continues independently in related repositories.
 
+
+---
+
+## 🔐 Security & Public Demo Considerations
+
+The web-based implementation (v1.4) included in this repository is intentionally
+configured in a **safe, public-demo mode**.
+
+To prevent abuse of AI generation resources and unintended cost or privacy risks,
+the following restrictions are applied:
+
+- Public request authentication (non-secret application key)
+- File type and size validation
+- Rate and endpoint surface minimization
+- Immediate deletion of original uploaded media
+
+These safeguards do **not** alter the core semantic communication concept.
+Rather, they reflect an important insight of this project:
+
+> In semantic communication systems,  
+> **who is allowed to perform semantic transformation is part of the protocol itself.**
+
+Full, unrestricted semantic pipelines remain a **theoretical reference model**
+and are explored in documentation and research materials rather than open demos.
+
+
 ---
 
 ## 📜 License
