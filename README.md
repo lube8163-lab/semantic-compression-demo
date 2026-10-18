@@ -1,3 +1,7 @@
+> Historical demonstration, archived on 2026-10-18. This repository is not the released Mim client.
+> Current public client: https://github.com/lube8163-lab/mim-ios-app
+> Support and legal website: https://github.com/lube8163-lab/mim-ios
+
 # 🧭 Semantic Compression Project
 
 An experimental implementation of **semantic communication**,  
